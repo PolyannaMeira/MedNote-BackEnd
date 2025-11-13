@@ -43,21 +43,50 @@ const systemPrompt = (lang: 'pt' | 'en') =>
 
 // --- GET /api/diagnose/stream (demo SSE) ---
 router.get('/stream', async (req, res) => {
+  console.log('Acessando rota /stream');
   const language = (String(req.query.language || 'pt') as 'pt' | 'en');
+  const query = String(req.query.q || '');
+  
+  console.log('Language:', language, 'Query:', query ? 'presente' : 'ausente');
+  
   const push = initSSE(res);
 
   if (!client) {
-    return res.status(503).json({ 
-      error: 'Serviço de IA temporariamente indisponível' 
-    });
+    console.log('Cliente OpenAI não disponível, usando mock');
+    push(JSON.stringify({
+      type: 'error',
+      message: language === 'pt' ? 'Serviço de IA temporariamente indisponível' : 'AI service temporarily unavailable'
+    }));
+    return res.end();
   }
 
   try {
-    push(language === 'pt' ? 'Gerando resposta com IA...' : 'Generating AI response...');
-    // (implementar streaming real depois; aqui é apenas demo)
-    setTimeout(() => res.end(), 1500);
-  } catch {
-    push('Erro no streaming');
+    push(JSON.stringify({
+      type: 'status',
+      message: language === 'pt' ? 'Gerando resposta com IA...' : 'Generating AI response...'
+    }));
+    
+    // Mock response para teste
+    setTimeout(() => {
+      push(JSON.stringify({
+        type: 'result',
+        data: {
+          diagnosis: 'Diagnóstico de teste via SSE',
+          conditions: ['Condição 1', 'Condição 2'],
+          exams: ['Exame 1', 'Exame 2'],
+          medications: ['Medicação 1'],
+          explanation: 'Esta é uma resposta de teste para verificar se o SSE está funcionando.',
+          language
+        }
+      }));
+      res.end();
+    }, 1500);
+  } catch (error) {
+    console.error('Erro no streaming:', error);
+    push(JSON.stringify({
+      type: 'error',
+      message: 'Erro no streaming'
+    }));
     res.end();
   }
 });
