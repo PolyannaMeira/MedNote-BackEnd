@@ -7,23 +7,21 @@ import { rateLimiter } from './lib/rateLimit';
 
 const app = express();
 
-// Middleware CORS ultra-permissivo para resolver problemas de teste
+const ALLOWED_ORIGIN =
+  process.env.NODE_ENV === 'production'
+    ? 'https://med-note-front-end.vercel.app/'
+    : '*';
+
+
 app.use((req, res, next) => {
-  // Force CORS headers on EVERY response
+  
   res.set({
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Max-Age': '86400'
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
   });
   
-  // Handle preflight requests immediately
-  if (req.method === 'OPTIONS') {
-    return res.status(200).send();
-  }
-  
-  next();
-});
 
 // Headers de segurança básicos
 app.use((_req, res, next) => {
