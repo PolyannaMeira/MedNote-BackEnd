@@ -8,7 +8,7 @@ import { rateLimiter } from './lib/rateLimit';
 const app = express();
 
 // Middleware CORS ultra-permissivo para resolver problemas de teste
-app.all('*', (req, res, next) => {
+app.use((req, res, next) => {
   // Force CORS headers on EVERY response
   res.set({
     'Access-Control-Allow-Origin': '*',
