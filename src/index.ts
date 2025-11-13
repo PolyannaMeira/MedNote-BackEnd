@@ -7,13 +7,13 @@ import { rateLimiter } from './lib/rateLimit';
 
 const app = express();
 
-// CORS customizado - deve vir ANTES de qualquer outra configuração
+// CORS completamente aberto - permite qualquer origem para testes
 app.use((req, res, next) => {
-  // Headers CORS para todas as requisições
-  res.header('Access-Control-Allow-Origin', 'https://med-note-front-end.vercel.app');
+  // Headers CORS liberados para todas as origens
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+  res.header('Access-Control-Allow-Credentials', 'false'); 
   
   // Para requisições OPTIONS, responde imediatamente
   if (req.method === 'OPTIONS') {
