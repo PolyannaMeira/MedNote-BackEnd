@@ -7,28 +7,27 @@ import { rateLimiter } from './lib/rateLimit';
 
 const app = express();
 
-// CORS completamente aberto - permite qualquer origem para testes
-app.use((req, res, next) => {
-  // Headers CORS liberados para todas as origens
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
-  res.header('Access-Control-Allow-Credentials', 'false'); 
+// Middleware CORS ultra-permissivo para resolver problemas de teste
+app.all('*', (req, res, next) => {
+  // Force CORS headers on EVERY response
+  res.set({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Max-Age': '86400'
+  });
   
-  // Para requisições OPTIONS, responde imediatamente
+  // Handle preflight requests immediately
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-    return;
+    return res.status(200).send();
   }
   
   next();
 });
 
-// Headers de segurança
+// Headers de segurança básicos
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
 });
 
