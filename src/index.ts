@@ -40,7 +40,7 @@ app.use('/api/transcribe', transcribeRoute);
 app.use('/api/chat', rateLimiter, chatRoute);
 
 // Middleware para capturar 404s
-app.use('*', (req, res) => {
+app.use((req, res) => {
   console.log(`404 - Rota não encontrada: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ 
     error: 'Rota não encontrada',
