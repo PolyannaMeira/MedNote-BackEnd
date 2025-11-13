@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import { ENV } from './env';
 import diagnoseRoute from './routes/diagnose';
 import transcribeRoute from './routes/transcribe';
@@ -8,35 +7,31 @@ import { rateLimiter } from './lib/rateLimit';
 
 const app = express();
 
-
-app.use((_req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+// CORS customizado - deve vir ANTES de qualquer outra configuração
+app.use((req, res, next) => {
+  // Headers CORS para todas as requisições
+  res.header('Access-Control-Allow-Origin', 'https://med-note-front-end.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
   
-  // Headers CORS adicionais para garantir compatibilidade
-  if (process.env.NODE_ENV === 'production') {
-    res.setHeader('Access-Control-Allow-Origin', 'https://med-note-front-end.vercel.app');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+  // Para requisições OPTIONS, responde imediatamente
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   next();
 });
 
+// Headers de segurança
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://med-note-front-end.vercel.app'] 
-    : true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
-}));
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (_req, res) => res.send('MedNote.IA backend ok'));
@@ -54,6 +49,5 @@ app.use('*', (req, res) => {
     path: req.originalUrl
   });
 });
-
 
 app.listen(ENV.PORT, () => console.log(`api on http://localhost:${ENV.PORT}`));
