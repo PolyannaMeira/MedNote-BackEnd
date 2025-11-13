@@ -19,12 +19,12 @@ app.use((_req, res, next) => {
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] 
+    ? ['https://med-note-front-end.vercel.app/'] 
     : true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
-
+  
 app.get('/', (_req, res) => res.send('MedNote.IA backend ok'));
 app.use('/api/diagnose', rateLimiter, diagnoseRoute);
 app.use('/api/transcribe', transcribeRoute);
